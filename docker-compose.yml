@@ -1,0 +1,40 @@
+services:
+  mqtt-broker:
+    image: eclipse-mosquitto:2.0
+    container_name: mqtt-broker
+    networks:
+      - shared-net
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./config/mosquitto.conf:/mosquitto/config/mosquitto.conf
+
+  publisher:
+    container_name: publisher
+    networks:
+      - shared-net
+    build:
+      context: .
+      dockerfile: publisher/Dockerfile
+    depends_on:
+      - mqtt-broker
+    environment:
+      - MQTT_BROKER=mqtt-
+    command: ["tail", "-f", "/dev/null"]
+
+  subscriber:
+    container_name: subscriber
+    networks:
+      - shared-net
+    build:
+      context: .
+      dockerfile: publisher/Dockerfile
+    depends_on:
+      - mqtt-broker
+    environment:
+      - MQTT_BROKER=mqtt-broker
+    command: ["tail", "-f", "/dev/null"]
+
+networks:
+  shared-net:
+    driver: bridge
