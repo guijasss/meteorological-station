@@ -8,6 +8,13 @@ import (
 	"github.com/google/uuid"
 )
 
+type SensorEvent struct {
+	station   string
+	timestamp string
+	sensor    string
+	value     float64
+}
+
 type Sensor interface {
 	Name() string
 	Read() float64

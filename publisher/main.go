@@ -19,7 +19,7 @@ func main() {
 	}
 	fmt.Println("✅ Publicador conectado ao broker MQTT")
 
-	topic := "sensors/temperature"
+	topic := "readings"
 
 	for i := 0; i < 10; i++ {
 		payload := fmt.Sprintf("Temperatura %d: %d°C", i+1, 20+i)

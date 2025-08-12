@@ -8,13 +8,6 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
-type SensorEvent struct {
-	station   string
-	timestamp string
-	sensor    string
-	value     float64
-}
-
 func sendMQTTEvent(event SensorEvent, broker string) error {
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker(broker)
@@ -42,20 +35,4 @@ func sendMQTTEvent(event SensorEvent, broker string) error {
 	}
 
 	return nil
-}
-
-func main() {
-	event := SensorEvent{
-		station:   "abc123",
-		timestamp: "2025-08-08T14:00:00Z",
-		sensor:    "temperature",
-		value:     23.5,
-	}
-
-	err := sendMQTTEvent(event, "tcp://mqtt-broker:1883")
-	if err != nil {
-		fmt.Println("Erro:", err)
-	} else {
-		fmt.Println("Evento enviado com sucesso!")
-	}
 }

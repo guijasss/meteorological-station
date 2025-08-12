@@ -26,7 +26,7 @@ func main() {
 	}
 	fmt.Println("✅ Assinante conectado ao broker MQTT")
 
-	topic := "sensors/temperature"
+	topic := "readings"
 	if token := client.Subscribe(topic, 0, nil); token.Wait() && token.Error() != nil {
 		panic(token.Error())
 	}

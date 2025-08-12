@@ -16,6 +16,8 @@ services:
     build:
       context: .
       dockerfile: publisher/Dockerfile
+    volumes:
+      - ./:/app
     depends_on:
       - mqtt-broker
     environment:
@@ -29,6 +31,8 @@ services:
     build:
       context: .
       dockerfile: publisher/Dockerfile
+    volumes:
+      - ./:/app
     depends_on:
       - mqtt-broker
     environment:
