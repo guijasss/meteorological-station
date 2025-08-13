@@ -32,9 +32,9 @@ func (s *BaseSensor) Name() string {
 }
 
 func (s *BaseSensor) fluctuate() float64 {
-	delta := (rand.Float64()*0.002 - 0.001) // entre -0.001 e 0.001
+	delta := (rand.Float64()*0.002 - 0.001)
 	s.baseValue = math.Max(0.0, s.baseValue+delta)
-	noise := (rand.Float64()*0.01 - 0.005) // entre -0.005 e 0.005
+	noise := (rand.Float64()*0.01 - 0.005)
 	return math.Max(0.0, s.baseValue+noise)
 }
 
@@ -99,6 +99,90 @@ func (s *WindDirectionSensor) Read() float64 {
 	return math.Round(val*100) / 100
 }
 
+type PressureSensor struct {
+	BaseSensor
+}
+
+func NewPressureSensor() *PressureSensor {
+	return &PressureSensor{
+		BaseSensor{
+			name:      "pressure",
+			baseValue: 1013.0,
+			noise:     0.5,
+		},
+	}
+}
+
+type WindSpeedSensor struct {
+	BaseSensor
+}
+
+func NewWindSpeedSensor() *WindSpeedSensor {
+	return &WindSpeedSensor{
+		BaseSensor{
+			name:      "wind_speed",
+			baseValue: 90.0,
+			noise:     0.2,
+		},
+	}
+}
+
+type SolarRadiationSensor struct {
+	BaseSensor
+}
+
+func NewSolarRadiatioSensor() *SolarRadiationSensor {
+	return &SolarRadiationSensor{
+		BaseSensor{
+			name:      "solar_radiation",
+			baseValue: 200.0,
+			noise:     1,
+		},
+	}
+}
+
+type UVSensor struct {
+	BaseSensor
+}
+
+func NewUVSensor() *UVSensor {
+	return &UVSensor{
+		BaseSensor{
+			name:      "uv",
+			baseValue: 5.0,
+			noise:     0.5,
+		},
+	}
+}
+
+type PrecipitationSensor struct {
+	BaseSensor
+}
+
+func NewPrecipitationSensor() *PrecipitationSensor {
+	return &PrecipitationSensor{
+		BaseSensor{
+			name:      "precipitation_rate",
+			baseValue: 0.0,
+			noise:     0.01,
+		},
+	}
+}
+
+type SoilHumiditySensor struct {
+	BaseSensor
+}
+
+func NewSoilHumiditySensor() *SoilHumiditySensor {
+	return &SoilHumiditySensor{
+		BaseSensor{
+			name:      "soil_humidity",
+			baseValue: 30.0,
+			noise:     1.0,
+		},
+	}
+}
+
 type WeatherStation struct {
 	StationID string
 	Sensors   map[string]Sensor
@@ -108,10 +192,15 @@ func NewWeatherStation() *WeatherStation {
 	return &WeatherStation{
 		StationID: uuid.New().String(),
 		Sensors: map[string]Sensor{
-			"temperature":    NewTemperatureSensor(),
-			"air_humidity":   NewAirHumiditySensor(),
-			"wind_direction": NewWindDirectionSensor(),
-			// Adicione outros sensores aqui...
+			"air_humidity":       NewAirHumiditySensor(),
+			"precipitation_rate": NewPrecipitationSensor(),
+			"pressure_rate":      NewPressureSensor(),
+			"soil_humidity":      NewSoilHumiditySensor(),
+			"solar_radiation":    NewSolarRadiatioSensor(),
+			"temperature":        NewTemperatureSensor(),
+			"uv":                 NewUVSensor(),
+			"wind_direction":     NewWindDirectionSensor(),
+			"wind_speed":         NewWindSpeedSensor(),
 		},
 	}
 }
