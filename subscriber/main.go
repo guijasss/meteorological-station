@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"os/signal"
@@ -9,13 +10,36 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
+func sendAlert(client mqtt.Client, alert *AlertMessage) {
+	payload, _ := json.Marshal(alert)
+	token := client.Publish("alerts", 0, false, payload)
+	token.Wait()
+	fmt.Println("🚨 Alerta enviado:", string(payload))
+}
+
 func main() {
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker("mqtt-broker:1883")
 	opts.SetClientID("go-subscriber")
 
+	alerts := []Alert{
+		HighTemperatureAlert{},
+		LowHumidityAlert{},
+	}
+
 	messageHandler := func(client mqtt.Client, msg mqtt.Message) {
-		fmt.Printf("📥 Recebido no tópico %s: %s\n", msg.Topic(), string(msg.Payload()))
+		var event SensorEvent
+		if err := json.Unmarshal(msg.Payload(), &event); err != nil {
+			fmt.Println("Erro ao decodificar evento:", err)
+			return
+		}
+
+		// Verifica cada alerta
+		for _, alert := range alerts {
+			if alertMsg := alert.Check(event); alertMsg != nil {
+				sendAlert(client, alertMsg)
+			}
+		}
 	}
 
 	opts.SetDefaultPublishHandler(messageHandler)

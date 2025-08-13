@@ -14,7 +14,7 @@ func publishEvents(events []SensorEvent, client mqtt.Client) {
 		data, _ := json.Marshal(event)
 		token := client.Publish("readings", 0, false, data)
 		token.Wait()
-		fmt.Printf("Published event: %s\n", event)
+		fmt.Printf("📡 enviado: %s\n", data)
 	}
 }
 
