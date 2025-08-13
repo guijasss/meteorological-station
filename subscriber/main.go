@@ -12,7 +12,7 @@ import (
 
 func sendAlert(client mqtt.Client, alert *AlertMessage) {
 	payload, _ := json.Marshal(alert)
-	token := client.Publish("alerts", 0, false, payload)
+	token := client.Publish("alerts", 1, true, payload)
 	token.Wait()
 	fmt.Println("🚨 Alerta enviado:", string(payload))
 }
@@ -21,6 +21,10 @@ func main() {
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker("mqtt-broker:1883")
 	opts.SetClientID("go-subscriber")
+	opts.CleanSession = false
+	opts.AutoReconnect = true
+	opts.ConnectRetry = true
+	opts.SetMessageChannelDepth(100)
 
 	alerts := []Alert{
 		HighTemperatureAlert{},
@@ -34,7 +38,6 @@ func main() {
 			return
 		}
 
-		// Verifica cada alerta
 		for _, alert := range alerts {
 			if alertMsg := alert.Check(event); alertMsg != nil {
 				sendAlert(client, alertMsg)
@@ -56,7 +59,6 @@ func main() {
 	}
 	fmt.Printf("📡 Assinando tópico: %s\n", topic)
 
-	// Espera Ctrl+C para encerrar
 	sigc := make(chan os.Signal, 1)
 	signal.Notify(sigc, os.Interrupt, syscall.SIGTERM)
 	<-sigc
