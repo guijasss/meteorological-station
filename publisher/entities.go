@@ -4,20 +4,22 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
+	"time"
 
 	"github.com/google/uuid"
 )
 
 type SensorEvent struct {
-	station   string
-	timestamp string
-	sensor    string
-	value     float64
+	Station   string  `json:"station"`
+	Timestamp int64   `json:"timestamp"`
+	Sensor    string  `json:"sensor"`
+	Value     float64 `json:"value"`
 }
 
 type Sensor interface {
 	Name() string
 	Read() float64
+	Station() string
 	SetValue(float64)
 }
 
@@ -25,10 +27,15 @@ type BaseSensor struct {
 	name      string
 	baseValue float64
 	noise     float64
+	station   string
 }
 
 func (s *BaseSensor) Name() string {
 	return s.name
+}
+
+func (s *BaseSensor) Station() string {
+	return s.station
 }
 
 func (s *BaseSensor) fluctuate() float64 {
@@ -220,4 +227,17 @@ func (ws *WeatherStation) SetSensorValue(sensorName string, newValue float64) er
 	}
 	sensor.SetValue(newValue)
 	return nil
+}
+
+func (ws *WeatherStation) ReadAll() []SensorEvent {
+	events := make([]SensorEvent, 0)
+	for _, sensor := range ws.Sensors {
+		events = append(events, SensorEvent{
+			Station:   sensor.Station(),
+			Timestamp: time.Now().Unix(),
+			Sensor:    sensor.Name(),
+			Value:     sensor.Read(),
+		})
+	}
+	return events
 }

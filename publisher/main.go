@@ -1,35 +1,42 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
-	"os"
+	"math/rand"
 	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
+func publishEvents(events []SensorEvent, client mqtt.Client) {
+	for _, event := range events {
+		data, _ := json.Marshal(event)
+		token := client.Publish("readings", 0, false, data)
+		token.Wait()
+		fmt.Printf("Published event: %s\n", event)
+	}
+}
+
 func main() {
-	opts := mqtt.NewClientOptions()
-	opts.AddBroker("mqtt-broker:1883") // ajuste se estiver em container
-	opts.SetClientID("go-publisher")
+	rand.Seed(time.Now().UnixNano())
+
+	opts := mqtt.NewClientOptions().
+		AddBroker("tcp://mqtt-broker:1883").
+		SetClientID("weather-station")
 
 	client := mqtt.NewClient(opts)
+
 	if token := client.Connect(); token.Wait() && token.Error() != nil {
 		panic(token.Error())
 	}
-	fmt.Println("✅ Publicador conectado ao broker MQTT")
+	defer client.Disconnect(250)
 
-	topic := "readings"
+	ws := NewWeatherStation()
 
-	for i := 0; i < 10; i++ {
-		payload := fmt.Sprintf("Temperatura %d: %d°C", i+1, 20+i)
-		token := client.Publish(topic, 0, false, payload)
-		token.Wait()
-		fmt.Printf("📤 Enviado: %s\n", payload)
+	for {
+		events := ws.ReadAll()
+		publishEvents(events, client)
 		time.Sleep(1 * time.Second)
 	}
-
-	client.Disconnect(250)
-	fmt.Println("🔌 Publicador desconectado")
-	os.Exit(0)
 }
