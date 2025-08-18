@@ -5,10 +5,26 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
+
+func sanitizeTag(tag string) string {
+	original := tag
+	tag = strings.ReplaceAll(tag, " ", "_")
+	tag = strings.ReplaceAll(tag, ",", "_")
+	tag = strings.ReplaceAll(tag, "=", "_")
+	tag = strings.ReplaceAll(tag, "\"", "_")
+	tag = strings.ReplaceAll(tag, "'", "_")
+
+	if original != tag {
+		fmt.Printf("🔍 Tag sanitizada: '%s' -> '%s'\n", original, tag)
+	}
+
+	return tag
+}
 
 func sendAlert(client mqtt.Client, alert *AlertMessage) {
 	payload, _ := json.Marshal(alert)
@@ -37,6 +53,8 @@ func main() {
 			fmt.Println("Erro ao decodificar evento:", err)
 			return
 		}
+
+		sendToQuestDB(event)
 
 		for _, alert := range alerts {
 			if alertMsg := alert.Check(event); alertMsg != nil {

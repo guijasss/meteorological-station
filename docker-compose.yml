@@ -3,6 +3,7 @@ services:
     image: eclipse-mosquitto:2.0
     container_name: mqtt-broker
     networks:
+      - edge-net
       - shared-net
     ports:
       - "1883:1883"
@@ -26,6 +27,7 @@ services:
     depends_on:
       - mqtt-broker
     networks:
+      - edge-net
       - shared-net
     deploy:
       resources:
@@ -36,7 +38,7 @@ services:
   publisher:
     container_name: publisher
     networks:
-      - shared-net
+      - edge-net
     build:
       context: .
       dockerfile: publisher/Dockerfile
@@ -51,6 +53,7 @@ services:
   subscriber:
     container_name: subscriber
     networks:
+      - edge-net
       - shared-net
     build:
       context: .
@@ -68,6 +71,38 @@ services:
           memory: 256m
     command: ["tail", "-f", "/dev/null"]
 
+  questdb:
+    image: questdb/questdb:9.0.2
+    container_name: questdb
+    hostname: questdb
+    networks:
+      - cloud-net
+      - shared-net
+    environment:
+      QDB_HTTP_BIND: 0.0.0.0:9000
+      QDB_PG_BIND: 0.0.0.0:8812
+      QDB_JDBC_BIND: 0.0.0.0:8812
+      QDB_MQTT_BIND: 0.0.0.0:9001
+      QDB_INIT_SQL_DIR: /docker-entrypoint-initdb.d
+    volumes:
+      - ./sql:/docker-entrypoint-initdb.d
+    ports:
+      - "9000:9000"  # UI/HTTP
+      - "8812:8812"  # SQL / JDBC
+      - "9002:9001"  # MQTT input
+
+  metabase:
+    image: metabase/metabase:latest
+    container_name: metabase
+    networks:
+      - cloud-net
+    ports:
+      - "3000:3000"
+
 networks:
-  shared-net:
+  edge-net:
     driver: bridge
+  cloud-net:
+    driver: bridge
+  shared-net:
+    external: true
