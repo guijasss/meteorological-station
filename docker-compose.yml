@@ -19,16 +19,19 @@ services:
     build:
       context: .
       dockerfile: o11y/Dockerfile
-    container_name: mqtt-observer
+    container_name: observer
     volumes:
       - ./o11y/:/app
-      - /var/run/docker.sock:/var/run/docker.sock   # acesso ao Docker API
-    ports:
-      - "8085:8080"   # interface web
+      - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
       - mqtt-broker
     networks:
       - shared-net
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256m
 
   publisher:
     container_name: publisher
