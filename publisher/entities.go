@@ -113,7 +113,7 @@ type PressureSensor struct {
 func NewPressureSensor() *PressureSensor {
 	return &PressureSensor{
 		BaseSensor{
-			name:      "pressure",
+			name:      "pressure_rate",
 			baseValue: 1013.0,
 			noise:     0.5,
 		},
@@ -233,7 +233,7 @@ func (ws *WeatherStation) ReadAll() []SensorEvent {
 	events := make([]SensorEvent, 0)
 	for _, sensor := range ws.Sensors {
 		events = append(events, SensorEvent{
-			Station:   sensor.Station(),
+			Station:   "Station A",
 			Timestamp: time.Now().Unix(),
 			Sensor:    sensor.Name(),
 			Value:     sensor.Read(),

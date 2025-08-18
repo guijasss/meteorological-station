@@ -6,8 +6,29 @@ services:
       - shared-net
     ports:
       - "1883:1883"
+      - "9001:9001"
     volumes:
-      - ./config/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - ./config/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256m
+
+  observer:
+    build:
+      context: .
+      dockerfile: o11y/Dockerfile
+    container_name: mqtt-observer
+    volumes:
+      - ./o11y/:/app
+      - /var/run/docker.sock:/var/run/docker.sock   # acesso ao Docker API
+    ports:
+      - "8085:8080"   # interface web
+    depends_on:
+      - mqtt-broker
+    networks:
+      - shared-net
 
   publisher:
     container_name: publisher
@@ -37,6 +58,11 @@ services:
       - mqtt-broker
     environment:
       - MQTT_BROKER=mqtt-broker
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256m
     command: ["tail", "-f", "/dev/null"]
 
 networks:
