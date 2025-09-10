@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net"
+	"runtime/debug"
 	"strings"
 	"sync"
 	"time"
@@ -92,6 +93,7 @@ func (c *QuestDBTCPClient) SendBatch(events []SensorEvent) error {
 		c.mu.Lock()
 		c.metrics.Failed += int64(len(events))
 		c.mu.Unlock()
+		debug.PrintStack()
 		return fmt.Errorf("erro ao enviar batch: %v", err)
 	}
 

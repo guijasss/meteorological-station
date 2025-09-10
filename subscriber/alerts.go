@@ -3,7 +3,7 @@ package main
 type HighTemperatureAlert struct{}
 
 func (a HighTemperatureAlert) Check(event SensorEvent) *AlertMessage {
-	if event.Sensor == "temperature" && event.Value > 1 {
+	if event.Sensor == "temperature" && event.Value > 20 {
 		return &AlertMessage{
 			Station:   event.Station,
 			Timestamp: event.Timestamp,
